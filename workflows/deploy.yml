@@ -33,11 +33,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Prepare Pages artifact
+      - name: Prepare deploy folder
         run: |
-          rm -rf out
-          mkdir out
-          cp -a dist/. out/
+          rm -rf /tmp/pages
+          mkdir -p /tmp/pages
+          cp -a dist/. /tmp/pages/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -45,7 +45,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: out/**
+          path: /tmp/pages
 
   deploy:
     environment:
