@@ -8,7 +8,7 @@ const DEFAULT_USERS: User[] = [
   { id: 'u3', name: 'Gonzalo', avatar: '🦕', color: '#22C55E' },
 ]
 
-function getDefaultState(): AppState {
+export function getDefaultState(): AppState {
   return {
     users: DEFAULT_USERS,
     titles: [],
