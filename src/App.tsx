@@ -27,7 +27,7 @@ export default function App() {
   const ctx = useAppState()
   return (
     <AppContext.Provider value={ctx}>
-      <BrowserRouter>
+      <BrowserRouter basename="/movie-munch">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/add" element={<AddTitle />} />
