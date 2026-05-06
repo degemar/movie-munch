@@ -34,21 +34,33 @@ const toRating = (row: any): Rating => ({
 })
 
 const fromTitle = (title: Title) => ({
-  ...title,
+  id: title.id,
+  type: title.type,
+  title: title.title,
+  platform: title.platform,
+  year: title.year ?? null,
+  overview: title.overview ?? null,
+  genre: title.genre ?? null,
   runtime_minutes: title.runtimeMinutes ?? null,
   seasons_count: title.seasonsCount ?? null,
   created_at: new Date().toISOString(),
 })
 
 const fromRating = (rating: Rating) => ({
-  ...rating,
+  id: rating.id,
   user_id: rating.userId,
   title_id: rating.titleId,
+  score: rating.score,
+  favorite: rating.favorite,
+  timestamp: rating.timestamp,
   created_at: new Date().toISOString(),
 })
 
 const fromUser = (user: User) => ({
-  ...user,
+  id: user.id,
+  name: user.name,
+  avatar: user.avatar,
+  color: user.color,
   created_at: new Date().toISOString(),
 })
 
@@ -72,12 +84,23 @@ export function useAppState() {
 
         if (canceled) return
 
-        const users: User[] = (userRes.data?.map(toUser) ?? [])
+        let users: User[] = (userRes.data?.map(toUser) ?? [])
         const titles: Title[] = (titleRes.data?.map(toTitle) ?? [])
         const ratings: Rating[] = (ratingRes.data?.map(toRating) ?? [])
 
+        if (users.length === 0) {
+          users = getDefaultState().users
+          const { error } = await supabase
+            .from('users')
+            .upsert(users.map(fromUser), { onConflict: 'id' })
+
+          if (error) {
+            console.warn('[Supabase] default user seed failed', error)
+          }
+        }
+
         const nextState: AppState = {
-          users: users.length ? users : getDefaultState().users,
+          users,
           titles,
           ratings,
           activeUserId: users.some((u: User) => u.id === state.activeUserId)
