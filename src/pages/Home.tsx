@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Clock3, Film, Flame, Heart, PlusCircle, Trophy, Tv } from 'lucide-react'
 import { useApp } from '../App'
 import UserAvatar from '../components/UserAvatar'
-import TitleCard from '../components/TitleCard'
 import StarRating from '../components/StarRating'
 import {
-  getGroupAverage, getUserLatestRating, getTitleLeaderboardScore, getUserLeaderboardScore,
+  getGroupAverage, getTitleLeaderboardScore, getUserLeaderboardScore,
 } from '../store'
 import RateSheet from './RateSheet'
 
@@ -24,19 +24,16 @@ export default function Home() {
   const navigate = useNavigate()
   const [showRate, setShowRate] = useState(false)
 
-  // Recent submissions (all users, last 5)
   const recentRatings = [...state.ratings]
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 5)
 
-  // Top rated titles
   const topTitles = [...state.titles]
     .map(t => ({ title: t, score: getTitleLeaderboardScore(state, t.id) }))
     .filter(x => x.score >= 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 6)
 
-  // User leaderboard preview
   const userRanks = [...state.users]
     .map(u => ({ user: u, ...getUserLeaderboardScore(state, u.id) }))
     .sort((a, b) => b.score - a.score)
@@ -46,35 +43,52 @@ export default function Home() {
     <>
       <div className="page">
         <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>🍿 Movie Munch</div>
+          <div className="brand-lockup">
+            <div className="brand-mark" aria-hidden="true">
+              <Film size={23} strokeWidth={2.3} />
+            </div>
+            <div>
+              <span className="brand-name">Movie Munch</span>
+              <span className="brand-subtitle">family watch list</span>
+            </div>
+          </div>
           <UserAvatar user={activeUser} showName size="md" onClick={() => navigate('/users')} />
         </div>
 
-        {/* Hero */}
         <div className="home-hero">
-          <h2>Hey, {activeUser.name}! {activeUser.avatar}</h2>
-          <h1>What did you watch?</h1>
-          <button className="btn" style={{ background: 'white', color: 'var(--orange)' }} onClick={() => setShowRate(true)}>
-            ➕ Add score
-          </button>
+          <div className="home-hero-copy">
+            <span className="home-kicker">Now watching</span>
+            <h2>Hey, {activeUser.name} {activeUser.avatar}</h2>
+            <h1>Score the next family pick.</h1>
+            <button className="btn hero-action" onClick={() => setShowRate(true)} type="button">
+              <PlusCircle size={19} strokeWidth={2.4} aria-hidden="true" />
+              Add score
+            </button>
+          </div>
         </div>
 
-        {/* Top Rated */}
         {topTitles.length > 0 && (
           <div className="section">
             <div className="section-header">
-              <span className="section-title">🔥 Top Rated</span>
+              <span className="section-title">
+                <Flame size={18} strokeWidth={2.4} aria-hidden="true" />
+                Top Rated
+              </span>
             </div>
             <div className="scroll-row">
-              {topTitles.map(({ title, score }) => {
+              {topTitles.map(({ title }) => {
                 const avg = getGroupAverage(state, title.id)
+                const PosterIcon = title.type === 'movie' ? Film : Tv
+
                 return (
                   <div key={title.id} className="mini-title-card" onClick={() => navigate(`/title/${title.id}`)}>
-                    <div className="mini-poster-placeholder">{title.type === 'movie' ? '🎬' : '📺'}</div>
+                    <div className="mini-poster-placeholder" aria-hidden="true">
+                      <PosterIcon size={34} strokeWidth={2.1} />
+                    </div>
                     <p>{title.title}</p>
                     {avg !== null && (
-                      <p style={{ color: 'var(--orange)', fontWeight: 900, fontSize: '0.8rem', textAlign: 'center' }}>
-                        ⭐ {avg.toFixed(1)}
+                      <p className="mini-score">
+                        {avg.toFixed(1)} avg
                       </p>
                     )}
                   </div>
@@ -84,11 +98,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* Recent Submissions */}
         {recentRatings.length > 0 && (
           <div className="section">
             <div className="section-header">
-              <span className="section-title">⏰ Recent Ratings</span>
+              <span className="section-title">
+                <Clock3 size={18} strokeWidth={2.4} aria-hidden="true" />
+                Recent Ratings
+              </span>
             </div>
             <div className="card">
               {recentRatings.map((r, i) => {
@@ -99,21 +115,21 @@ export default function Home() {
                   <React.Fragment key={r.id}>
                     {i > 0 && <div className="divider" />}
                     <div
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer' }}
+                      className="recent-rating-row"
                       onClick={() => navigate(`/title/${title.id}`)}
                     >
                       <UserAvatar user={user} size="sm" />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {title.title}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {user.name} · {fmtDate(r.timestamp)}
+                          {user.name} - {fmtDate(r.timestamp)}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div className="rating-actions">
                         <StarRating score={r.score} readonly size="sm" />
-                        {r.favorite && <span>❤️</span>}
+                        {r.favorite && <Heart className="icon-heart" size={17} aria-label="Favorite" />}
                       </div>
                     </div>
                   </React.Fragment>
@@ -123,22 +139,24 @@ export default function Home() {
           </div>
         )}
 
-        {/* Mini leaderboard */}
         {userRanks.length > 0 && (
           <div className="section">
             <div className="section-header">
-              <span className="section-title">🏆 Top Critics</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/leaderboard')}>See all</button>
+              <span className="section-title">
+                <Trophy size={18} strokeWidth={2.4} aria-hidden="true" />
+                Top Critics
+              </span>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/leaderboard')} type="button">See all</button>
             </div>
             <div className="card">
               {userRanks.map((u, i) => (
                 <React.Fragment key={u.user.id}>
                   {i > 0 && <div className="divider" />}
                   <div className="lb-item">
-                    <span className="lb-rank">{['🥇','🥈','🥉'][i]}</span>
+                    <span className="rank-pill">{i + 1}</span>
                     <UserAvatar user={u.user} showName size="sm" />
                     <div className="lb-score">
-                      <span className="score-badge">⭐ {u.avg.toFixed(1)}</span>
+                      <span className="score-badge">{u.avg.toFixed(1)} avg</span>
                     </div>
                   </div>
                 </React.Fragment>
